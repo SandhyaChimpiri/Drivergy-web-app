@@ -9,6 +9,14 @@ export const metadata: Metadata = {
     description: 'Apply for expert assistance with your new or renewed driving license. Let Drivergy handle the paperwork for you.',
 };
 
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '8mb',
+        },
+    },
+};
+
 export default function RtoAssistanceApplyPage() {
     return (
         <div className="container mx-auto max-w-2xl p-4 py-8 sm:p-6 lg:p-8">
@@ -19,7 +27,7 @@ export default function RtoAssistanceApplyPage() {
                     </div>
                     <CardTitle className="font-headline text-3xl font-bold">RTO Assistance Application</CardTitle>
                     <CardDescription>
-                        Fill out the form below to apply for license assistance. The official fee is ₹299.
+                        Fill out the form below to apply for license assistance. This service is now free.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="p-6">
