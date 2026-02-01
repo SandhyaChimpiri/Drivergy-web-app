@@ -13,7 +13,7 @@ import ReferralTable from '@/components/dashboard/referral-table';
 import { listenToAdminDashboardData } from '@/lib/mock-data';
 import { updateRescheduleRequestStatus } from '@/lib/server-actions';
 import type { UserProfile, LessonRequest, SummaryData, Feedback, LessonProgressData, Course, QuizSet, FaqItem, BlogPost, SiteBanner, PromotionalPoster, Referral, AdminDashboardData, RescheduleRequest, RescheduleRequestStatusType } from '@/types';
-import { UserCheck, Search, ListChecks, MessageSquare, ShieldCheck, BarChart2, Library, BookText, HelpCircle, ImagePlay, ClipboardCheck, BookOpen, Gift, Users, History, Repeat } from 'lucide-react';
+import { UserCheck, Search, ListChecks, MessageSquare, ShieldCheck, BarChart2, Library, BookText, HelpCircle, ImagePlay, ClipboardCheck, BookOpen, Gift, Users, History, Repeat, FileText as RtoIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -26,6 +26,7 @@ import VisualContentManagement from './visual-content-management';
 import { useAuth } from '@/context/auth-context';
 import RescheduleRequestTable from './reschedule-request-table';
 import { useToast } from '@/hooks/use-toast';
+import RtoRequestTable from './rto-request-table';
 
 
 export default function AdminDashboard() {
@@ -191,6 +192,12 @@ export default function AdminDashboard() {
                      <RescheduleRequestTable
                         title={<><Repeat className="inline-block mr-3 h-6 w-6 align-middle" />Lesson Reschedule Requests</>}
                         requests={dashboardData?.rescheduleRequests || []}
+                        isLoading={loading}
+                        onActioned={handleActioned}
+                    />
+                     <RtoRequestTable
+                        title={<><RtoIcon className="inline-block mr-3 h-6 w-6 align-middle" />RTO Assistance Requests</>}
+                        requests={dashboardData?.rtoAssistanceRequests || []}
                         isLoading={loading}
                         onActioned={handleActioned}
                     />

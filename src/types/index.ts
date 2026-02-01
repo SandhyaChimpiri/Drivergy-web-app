@@ -22,6 +22,8 @@ export const PayoutStatusOptions = ['Pending', 'Paid', 'Withdraw to UPI'] as con
 export const RescheduleRequestStatusOptions = ['Pending', 'Approved', 'Rejected'] as const;
 export const SkillStatusOptions = ['Not Started', 'Needs Practice', 'Proficient'] as const;
 export const RtoServiceTypeOptions = ['New License', 'Renew License'] as const;
+export const RtoAssistanceStatusOptions = ['Pending', 'In Progress', 'Completed', 'Rejected'] as const;
+
 
 export const IndianStates = ["Uttar Pradesh"] as const;
 
@@ -261,6 +263,7 @@ export type FeedbackFormValues = z.infer<typeof FeedbackFormSchema>;
 
 export const RtoAssistanceFormSchema = z.object({
     fullName: z.string().min(1, 'Full name is required.'),
+    email: z.string().email('Please enter a valid email address.'),
     contactNumber: z.string().length(10, 'Contact number must be 10 digits.'),
     serviceType: z.enum(RtoServiceTypeOptions, { required_error: "Please select a service type."}),
     state: z.enum(RtoAllowedStates, { required_error: "State is required."}),
@@ -420,6 +423,16 @@ export interface RescheduleRequest {
 }
 export type RescheduleRequestStatusType = (typeof RescheduleRequestStatusOptions)[number];
 
+export interface RtoAssistanceRequest extends RtoAssistanceFormValues {
+    id: string;
+    status: (typeof RtoAssistanceStatusOptions)[number];
+    createdAt: string; // ISO string
+    passportPhotoUrl?: string;
+    signaturePhotoUrl?: string;
+    aadharFileUrl?: string;
+    oldDlFileUrl?: string;
+}
+
 
 export interface TrainerSummaryData {
   totalStudents: number;
@@ -567,6 +580,7 @@ export interface AdminDashboardData {
     allUsers: UserProfile[];
     lessonRequests: LessonRequest[];
     rescheduleRequests: RescheduleRequest[];
+    rtoAssistanceRequests: RtoAssistanceRequest[];
     feedback: Feedback[];
     referrals: Referral[];
     lessonProgress: LessonProgressData[];

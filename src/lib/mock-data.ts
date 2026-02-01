@@ -2,7 +2,7 @@
 
 import { collection, onSnapshot, doc, query, where, getDocs, getDoc, orderBy } from 'firebase/firestore';
 import { db } from './firebase/client';
-import type { PromotionalPoster, UserProfile, Course, QuizSet, FaqItem, BlogPost, SiteBanner, SummaryData, LessonRequest, Feedback, Referral, LessonProgressData, AdminDashboardData, RescheduleRequest, Notification } from '@/types';
+import type { PromotionalPoster, UserProfile, Course, QuizSet, FaqItem, BlogPost, SiteBanner, SummaryData, LessonRequest, Feedback, Referral, LessonProgressData, AdminDashboardData, RescheduleRequest, Notification, RtoAssistanceRequest } from '@/types';
 import { format, parseISO } from 'date-fns';
 import { fetchCourses as serverFetchCourses, fetchQuizSets as serverFetchQuizSets, fetchBlogPosts as serverFetchBlogPosts, fetchBlogPostBySlug as serverFetchBlogPostBySlug, fetchUserById as serverFetchUserById } from './server-data';
 
@@ -59,12 +59,13 @@ export const listenToAdminDashboardData = (callback: (data: AdminDashboardData |
     const postersRef = collection(db, 'promotionalPosters');
     const rescheduleRef = collection(db, 'rescheduleRequests');
     const feedbackRef = collection(db, 'feedback');
+    const rtoRequestsRef = collection(db, 'rtoAssistanceRequests');
 
     const unsubs: (() => void)[] = [];
 
     const fetchData = async () => {
         try {
-            const [usersSnap, trainersSnap, coursesSnap, quizSetsSnap, faqsSnap, blogSnap, bannersSnap, postersSnap, rescheduleSnap, feedbackSnap] = await Promise.all([
+            const [usersSnap, trainersSnap, coursesSnap, quizSetsSnap, faqsSnap, blogSnap, bannersSnap, postersSnap, rescheduleSnap, feedbackSnap, rtoRequestsSnap] = await Promise.all([
                 getDocs(usersRef),
                 getDocs(trainersRef),
                 getDocs(coursesRef),
@@ -74,7 +75,8 @@ export const listenToAdminDashboardData = (callback: (data: AdminDashboardData |
                 getDocs(bannersRef),
                 getDocs(postersRef),
                 getDocs(query(rescheduleRef, orderBy('requestTimestamp', 'desc'))),
-                getDocs(query(feedbackRef, orderBy('submissionDate', 'desc')))
+                getDocs(query(feedbackRef, orderBy('submissionDate', 'desc'))),
+                getDocs(query(rtoRequestsRef, orderBy('createdAt', 'desc')))
             ]);
             
             const customers: UserProfile[] = usersSnap.docs.map(d => ({
@@ -150,6 +152,15 @@ export const listenToAdminDashboardData = (callback: (data: AdminDashboardData |
 
                 return formattedRequest;
             });
+            
+            const rtoAssistanceRequests: RtoAssistanceRequest[] = rtoRequestsSnap.docs.map(d => {
+                const data = d.data();
+                return {
+                    id: d.id,
+                    ...data,
+                    createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : 'N/A',
+                } as RtoAssistanceRequest;
+            });
 
 
             const summaryData: SummaryData = {
@@ -172,6 +183,7 @@ export const listenToAdminDashboardData = (callback: (data: AdminDashboardData |
                 allUsers,
                 lessonRequests,
                 rescheduleRequests,
+                rtoAssistanceRequests,
                 feedback,
                 referrals,
                 lessonProgress,
@@ -192,7 +204,7 @@ export const listenToAdminDashboardData = (callback: (data: AdminDashboardData |
 
     fetchData(); // Initial fetch
 
-    const collections = [usersRef, trainersRef, coursesRef, quizSetsRef, faqsRef, blogRef, bannersRef, postersRef, rescheduleRef, feedbackRef];
+    const collections = [usersRef, trainersRef, coursesRef, quizSetsRef, faqsRef, blogRef, bannersRef, postersRef, rescheduleRef, feedbackRef, rtoRequestsRef];
     collections.forEach(ref => {
         const unsubscribe = onSnapshot(ref, fetchData, (error) => console.error("Snapshot error:", error));
         unsubs.push(unsubscribe);

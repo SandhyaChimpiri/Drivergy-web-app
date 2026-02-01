@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -40,11 +39,7 @@ export default function RtoServicesPage() {
                         </div>
                     </CardHeader>
                     <CardContent className="flex-grow">
-                        <p className="text-muted-foreground">Let our experts handle the paperwork for your New or Renewed Driving License. Quick, easy, and hassle-free service.</p>
-                        <div className="mt-4 text-center p-2 bg-muted rounded-lg">
-                            <p className="text-sm text-muted-foreground">Official Fee</p>
-                            <p className="text-2xl font-bold text-primary">₹299</p>
-                        </div>
+                        <p className="text-muted-foreground">Let our experts handle the paperwork for your New or Renewed Driving License. This service is now completely free!</p>
                     </CardContent>
                     <CardFooter>
                         <Button className="w-full" asChild>

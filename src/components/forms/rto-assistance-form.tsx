@@ -14,21 +14,19 @@ import { submitRtoAssistanceAction } from '@/lib/server-actions';
 import { Loader2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { Textarea } from '../ui/textarea';
-import { useRouter } from 'next/navigation';
 
 function SubmitButton() {
     const { pending } = useFormStatus();
     return (
         <Button type="submit" className="w-full sm:w-auto" disabled={pending}>
           {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Pay ₹299 & Submit
+          Submit Application
         </Button>
     );
 }
 
 export function RtoAssistanceForm() {
   const { toast } = useToast();
-  const router = useRouter();
   const [state, formAction] = useFormState(submitRtoAssistanceAction, { success: false, error: undefined });
   
   const form = useForm<RtoAssistanceFormValues>({
@@ -36,6 +34,7 @@ export function RtoAssistanceForm() {
     defaultValues: {
       serviceType: undefined,
       fullName: '',
+      email: '',
       contactNumber: '',
       state: undefined,
       district: '',
@@ -69,10 +68,10 @@ export function RtoAssistanceForm() {
   useEffect(() => {
     if (state.success) {
       toast({
-        title: "Application Details Saved",
-        description: "Redirecting you to the payment page to complete your request.",
+        title: "Application Submitted",
+        description: "Thank you for your submission. Our team will contact you soon.",
       });
-      router.push('/payment?plan=RTO%20Assistance&price=299');
+      form.reset();
     } else if (state.error) {
       toast({
         title: "Submission Failed",
@@ -80,7 +79,7 @@ export function RtoAssistanceForm() {
         variant: "destructive",
       });
     }
-  }, [state, toast, router]);
+  }, [state, toast, form]);
 
   const onClientSubmit = (data: RtoAssistanceFormValues) => {
     const formData = new FormData();
@@ -100,7 +99,10 @@ export function RtoAssistanceForm() {
         <FormField control={form.control} name="serviceType" render={({ field }) => ( <FormItem><FormLabel>Service Type</FormLabel><Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select the service you need" /></SelectTrigger></FormControl><SelectContent>{RtoServiceTypeOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )} />
         {serviceType && (
           <>
-            <FormField control={form.control} name="fullName" render={({ field }) => ( <FormItem><FormLabel>Full Name (as per Aadhaar)</FormLabel><FormControl><Input placeholder="Enter your full name" {...field} /></FormControl><FormMessage /></FormItem> )} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <FormField control={form.control} name="fullName" render={({ field }) => ( <FormItem><FormLabel>Full Name (as per Aadhaar)</FormLabel><FormControl><Input placeholder="Enter your full name" {...field} /></FormControl><FormMessage /></FormItem> )} />
+              <FormField control={form.control} name="email" render={({ field }) => ( <FormItem><FormLabel>Email Address</FormLabel><FormControl><Input type="email" placeholder="you@example.com" {...field} /></FormControl><FormMessage /></FormItem> )} />
+            </div>
              <FormField control={form.control} name="contactNumber" render={({ field }) => (
                 <FormItem>
                     <FormLabel>Contact Number</FormLabel>

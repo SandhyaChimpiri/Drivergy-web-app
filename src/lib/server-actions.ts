@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 import { RegistrationFormSchema, FullCustomerDetailsSchema, UserProfileUpdateSchema, ChangePasswordSchema, CourseModuleSchema, QuizQuestionSchema, VisualContentSchema, FaqSchema, BlogPostFormValues, BlogPostSchema, TrainerRegistrationFormSchema, CustomerRegistrationFormSchema, SkillSchema, RtoAssistanceFormSchema } from '@/types';
-import type { UserProfile, ApprovalStatusType, PayoutStatusType, RescheduleRequestStatusType, UserProfileUpdateValues, RescheduleRequest, ChangePasswordValues, FullCustomerDetailsValues, CourseModuleFormValues, QuizQuestionFormValues, VisualContentFormValues, FaqFormValues, RegistrationFormValues, Notification, Skill, SkillStatus } from '@/types';
+import type { UserProfile, ApprovalStatusType, PayoutStatusType, RescheduleRequestStatusType, UserProfileUpdateValues, RescheduleRequest, ChangePasswordValues, FullCustomerDetailsValues, CourseModuleFormValues, QuizQuestionFormValues, VisualContentFormValues, FaqFormValues, RegistrationFormValues, Notification, Skill, SkillStatus, RtoAssistanceRequest } from '@/types';
 import { format, parse, parseISO, addDays } from 'date-fns';
 import { adminAuth, adminDb, adminStorage } from './firebase/admin';
 import { revalidatePath } from 'next/cache';
@@ -1093,16 +1093,57 @@ export async function submitRtoAssistanceAction(prevState: any, formData: FormDa
             createdAt: new Date(),
         });
         
-        // Here you would redirect to a payment page for the 299 fee.
-        // For now, we will just return success.
+        await sendEmail({
+            to: rtoData.email,
+            subject: 'Drivergy RTO Assistance Application Received',
+            text: `Hello ${rtoData.fullName},\n\nWe have received your application for ${rtoData.serviceType}. Our team will review your documents and contact you shortly.\n\nThank you,\nThe Drivergy Team`,
+            html: `<h1>Application Received!</h1><p>Hello ${rtoData.fullName},</p><p>We have received your application for <strong>${rtoData.serviceType}</strong>. Our team will review your documents and contact you shortly.</p><p>Thank you,<br/>The Drivergy Team</p>`,
+        });
+
+        const adminEmail = process.env.ADMIN_EMAIL || 'admin@drivergy.com';
+        await sendEmail({
+            to: adminEmail,
+            subject: `New RTO Assistance Request: ${rtoData.fullName}`,
+            text: `A new RTO assistance request has been submitted.\n\nName: ${rtoData.fullName}\nService: ${rtoData.serviceType}\nContact: ${rtoData.contactNumber}\nEmail: ${rtoData.email}\n\nPlease review the request in the admin dashboard.`,
+            html: `<h1>New RTO Assistance Request</h1><ul><li><strong>Name:</strong> ${rtoData.fullName}</li><li><strong>Service:</strong> ${rtoData.serviceType}</li><li><strong>Contact:</strong> ${rtoData.contactNumber}</li><li><strong>Email:</strong> ${rtoData.email}</li></ul><p>Please review the request in the admin dashboard.</p>`,
+        });
         
+        revalidatePath('/dashboard');
         return { success: true };
+
     } catch(error: any) {
         console.error("Error submitting RTO assistance request:", error);
         return { success: false, error: "An unexpected error occurred while saving your application." };
     }
 }
+
+export async function updateRtoAssistanceStatus(requestId: string, newStatus: 'In Progress' | 'Completed' | 'Rejected'): Promise<{ success: boolean; error?: string }> {
+    if (!adminDb) return { success: false, error: "Database not configured." };
+    
+    try {
+        const requestRef = adminDb.collection('rtoAssistanceRequests').doc(requestId);
+        await requestRef.update({ status: newStatus });
+
+        const requestDoc = await requestRef.get();
+        const requestData = requestDoc.data();
+        if (requestData && requestData.email) {
+            await sendEmail({
+                to: requestData.email,
+                subject: `Update on your RTO Assistance Request`,
+                text: `Hello ${requestData.fullName},\n\nYour RTO assistance request status has been updated to: ${newStatus}.\n\nOur team will be in touch with the next steps if required.\n\nThanks,\nThe Drivergy Team`,
+                html: `<h1>RTO Request Update</h1><p>Hello ${requestData.fullName},</p><p>Your RTO assistance request status has been updated to: <strong>${newStatus}</strong>.</p><p>Our team will be in touch with the next steps if required.</p><p>Thanks,<br/>The Drivergy Team</p>`,
+            });
+        }
+
+        revalidatePath('/dashboard');
+        return { success: true };
+    } catch (error: any) {
+        console.error(`Error updating RTO request ${requestId} status:`, error);
+        return { success: false, error: "Failed to update request status." };
+    }
+}
     
 
     
+
 
