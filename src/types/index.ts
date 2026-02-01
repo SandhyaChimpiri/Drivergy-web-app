@@ -29,6 +29,12 @@ export const DistrictsByState = {
   "Uttar Pradesh": ["Prayagraj", "Kanpur", "Lucknow", "Varanasi"],
 } as const;
 
+// New constants for RTO services
+export const RtoAllowedStates = ['Uttar Pradesh'] as const;
+export const RtoDistrictsByState = {
+  "Uttar Pradesh": ["Prayagraj", "Varanasi", "Kanpur", "Lucknow"],
+} as const;
+
 // =================================================================
 // ZOD SCHEMAS & TYPES
 // =================================================================
@@ -255,22 +261,37 @@ export type FeedbackFormValues = z.infer<typeof FeedbackFormSchema>;
 
 export const RtoAssistanceFormSchema = z.object({
     fullName: z.string().min(1, 'Full name is required.'),
+    contactNumber: z.string().length(10, 'Contact number must be 10 digits.'),
     serviceType: z.enum(RtoServiceTypeOptions, { required_error: "Please select a service type."}),
+    state: z.enum(RtoAllowedStates, { required_error: "State is required."}),
+    district: z.string().min(1, 'District is required.'),
+    pincode: z.string().length(6, 'Pincode must be 6 digits.'),
+    rtoOfficeName: z.string().min(1, 'Please enter the name of your nearby RTO office.'),
     fathersName: z.string().optional(),
     address: z.string().optional(),
-    aadharNumber: z.string().optional(),
     passportPhoto: z.any().optional(),
     signaturePhoto: z.any().optional(),
     oldDlNumber: z.string().optional(),
     aadharFile: z.any().optional(),
     oldDlFile: z.any().optional(),
   }).superRefine((data, ctx) => {
+      if (data.state) {
+          const allowedDistricts = RtoDistrictsByState[data.state];
+          if (!allowedDistricts.includes(data.district as any)) {
+               ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: `Service is only available in: ${allowedDistricts.join(', ')}.`,
+                  path: ['district'],
+              });
+          }
+      }
+
       if (data.serviceType === 'New License') {
           if (!data.fathersName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Father's name is required.", path: ['fathersName'] });
           if (!data.address) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Address is required.', path: ['address'] });
-          if (!data.aadharNumber) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Aadhaar number is required.', path: ['aadharNumber'] });
           if (!(data.passportPhoto instanceof File)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Passport photo is required.', path: ['passportPhoto'] });
           if (!(data.signaturePhoto instanceof File)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Signature photo is required.', path: ['signaturePhoto'] });
+          if (!(data.aadharFile instanceof File)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Aadhaar file is required.', path: ['aadharFile'] });
       }
       if (data.serviceType === 'Renew License') {
           if (!data.oldDlNumber) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Old DL number is required.', path: ['oldDlNumber'] });
