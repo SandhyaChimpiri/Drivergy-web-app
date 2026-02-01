@@ -1,15 +1,13 @@
+
 'use client';
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Car, ExternalLink, FileText, IndianRupee, Receipt, Search, Type, Ticket, CreditCard } from 'lucide-react';
-import { useState } from 'react';
-import { RtoAssistanceForm } from '@/components/forms/rto-assistance-form';
-import { DialogTrigger } from '@/components/ui/dialog';
+import Link from 'next/link';
 
 export default function RtoServicesPage() {
-    const [isFormOpen, setIsFormOpen] = useState(false);
     
     return (
         <div className="container mx-auto max-w-7xl p-4 py-8 sm:p-6 lg:p-8">
@@ -29,60 +27,56 @@ export default function RtoServicesPage() {
                 </div>
             </Card>
 
-            <RtoAssistanceForm open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                    
-                    {/* Drivergy Assistance Card */}
-                    <Card className="shadow-lg hover:shadow-xl transition-shadow flex flex-col border-2 border-primary">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                {/* Drivergy Assistance Card */}
+                <Card className="shadow-lg hover:shadow-xl transition-shadow flex flex-col border-2 border-primary">
+                    <CardHeader>
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-primary/10 rounded-lg">
+                                <FileText className="h-7 w-7 text-primary" />
+                            </div>
+                            <CardTitle as="h2" className="font-headline text-xl text-primary">Drivergy RTO Assistance</CardTitle>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                        <p className="text-muted-foreground">Let our experts handle the paperwork for your New or Renewed Driving License. Quick, easy, and hassle-free service.</p>
+                        <div className="mt-4 text-center p-2 bg-muted rounded-lg">
+                            <p className="text-sm text-muted-foreground">Official Fee</p>
+                            <p className="text-2xl font-bold text-primary">₹299</p>
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                        <Button className="w-full" asChild>
+                            <Link href="/rto-services/apply">Apply Now</Link>
+                        </Button>
+                    </CardFooter>
+                </Card>
+
+                {rtoServices.map((service) => (
+                    <Card key={service.title} className="shadow-lg hover:shadow-xl transition-shadow flex flex-col">
                         <CardHeader>
                             <div className="flex items-center gap-4">
                                 <div className="p-3 bg-primary/10 rounded-lg">
-                                    <FileText className="h-7 w-7 text-primary" />
+                                    <service.icon className="h-7 w-7 text-primary" />
                                 </div>
-                                <CardTitle as="h2" className="font-headline text-xl text-primary">Drivergy RTO Assistance</CardTitle>
+                                <CardTitle as="h2" className="font-headline text-xl text-primary">{service.title}</CardTitle>
                             </div>
                         </CardHeader>
                         <CardContent className="flex-grow">
-                            <p className="text-muted-foreground">Let our experts handle the paperwork for your New or Renewed Driving License. Quick, easy, and hassle-free service.</p>
-                            <div className="mt-4 text-center p-2 bg-muted rounded-lg">
-                                <p className="text-sm text-muted-foreground">Official Fee</p>
-                                <p className="text-2xl font-bold text-primary">₹299</p>
-                            </div>
+                            <p className="text-muted-foreground">{service.description}</p>
                         </CardContent>
                         <CardFooter>
-                            <DialogTrigger asChild>
-                                <Button className="w-full">
-                                    Apply Now
-                                </Button>
-                            </DialogTrigger>
+                            <Button asChild className="w-full">
+                                <a href={service.link} target="_blank" rel="noopener noreferrer">
+                                    Go to Service
+                                    <ExternalLink className="ml-2 h-4 w-4" />
+                                </a>
+                            </Button>
                         </CardFooter>
                     </Card>
-
-                    {rtoServices.map((service) => (
-                        <Card key={service.title} className="shadow-lg hover:shadow-xl transition-shadow flex flex-col">
-                            <CardHeader>
-                                <div className="flex items-center gap-4">
-                                    <div className="p-3 bg-primary/10 rounded-lg">
-                                        <service.icon className="h-7 w-7 text-primary" />
-                                    </div>
-                                    <CardTitle as="h2" className="font-headline text-xl text-primary">{service.title}</CardTitle>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="flex-grow">
-                                <p className="text-muted-foreground">{service.description}</p>
-                            </CardContent>
-                            <CardFooter>
-                                <Button asChild className="w-full">
-                                    <a href={service.link} target="_blank" rel="noopener noreferrer">
-                                        Go to Service
-                                        <ExternalLink className="ml-2 h-4 w-4" />
-                                    </a>
-                                </Button>
-                            </CardFooter>
-                        </Card>
-                    ))}
-                </div>
-            </RtoAssistanceForm>
+                ))}
+            </div>
             <div className="mt-12 text-center p-4 border-dashed border-2 border-muted-foreground/30 rounded-lg">
                 <p className="text-sm text-muted-foreground">
                     Please note: Some links redirect to official Government of India websites. Drivergy is not responsible for the content or services provided on external sites.
