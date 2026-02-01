@@ -1,15 +1,15 @@
-
 'use client';
 
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Car, ExternalLink, FileText, IndianRupee, Receipt, Search, Type, Ticket, CreditCard } from 'lucide-react';
-import type { Metadata } from 'next';
+import { useState } from 'react';
+import { RtoAssistanceForm } from '@/components/forms/rto-assistance-form';
+import { DialogTrigger } from '@/components/ui/dialog';
 
 export default function RtoServicesPage() {
-    // This metadata is now client-side, but good for context
-    // For full SEO, this should be a server component with exported metadata
+    const [isFormOpen, setIsFormOpen] = useState(false);
     
     return (
         <div className="container mx-auto max-w-7xl p-4 py-8 sm:p-6 lg:p-8">
@@ -24,39 +24,68 @@ export default function RtoServicesPage() {
                     </div>
                     <h1 className="font-headline text-4xl md:text-5xl font-bold text-primary">Online RTO Services</h1>
                     <p className="mt-2 text-lg text-muted-foreground max-w-2xl mx-auto">
-                        Access official RTO services directly from the Parivahan Sewa portal.
+                        Access official RTO services and get expert assistance from Drivergy.
                     </p>
                 </div>
             </Card>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {rtoServices.map((service) => (
-                    <Card key={service.title} className="shadow-lg hover:shadow-xl transition-shadow flex flex-col">
+            <RtoAssistanceForm open={isFormOpen} onOpenChange={setIsFormOpen}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    
+                    {/* Drivergy Assistance Card */}
+                    <Card className="shadow-lg hover:shadow-xl transition-shadow flex flex-col border-2 border-primary">
                         <CardHeader>
                             <div className="flex items-center gap-4">
                                 <div className="p-3 bg-primary/10 rounded-lg">
-                                    <service.icon className="h-7 w-7 text-primary" />
+                                    <FileText className="h-7 w-7 text-primary" />
                                 </div>
-                                <CardTitle as="h2" className="font-headline text-xl text-primary">{service.title}</CardTitle>
+                                <CardTitle as="h2" className="font-headline text-xl text-primary">Drivergy RTO Assistance</CardTitle>
                             </div>
                         </CardHeader>
                         <CardContent className="flex-grow">
-                            <p className="text-muted-foreground">{service.description}</p>
+                            <p className="text-muted-foreground">Let our experts handle the paperwork for your New or Renewed Driving License. Quick, easy, and hassle-free service.</p>
+                            <div className="mt-4 text-center p-2 bg-muted rounded-lg">
+                                <p className="text-sm text-muted-foreground">Official Fee</p>
+                                <p className="text-2xl font-bold text-primary">₹299</p>
+                            </div>
                         </CardContent>
                         <CardFooter>
-                            <Button asChild className="w-full">
-                                <a href={service.link} target="_blank" rel="noopener noreferrer">
-                                    Go to Service
-                                    <ExternalLink className="ml-2 h-4 w-4" />
-                                </a>
-                            </Button>
+                            <DialogTrigger asChild>
+                                <Button className="w-full">
+                                    Apply Now
+                                </Button>
+                            </DialogTrigger>
                         </CardFooter>
                     </Card>
-                ))}
-            </div>
+
+                    {rtoServices.map((service) => (
+                        <Card key={service.title} className="shadow-lg hover:shadow-xl transition-shadow flex flex-col">
+                            <CardHeader>
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-primary/10 rounded-lg">
+                                        <service.icon className="h-7 w-7 text-primary" />
+                                    </div>
+                                    <CardTitle as="h2" className="font-headline text-xl text-primary">{service.title}</CardTitle>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="flex-grow">
+                                <p className="text-muted-foreground">{service.description}</p>
+                            </CardContent>
+                            <CardFooter>
+                                <Button asChild className="w-full">
+                                    <a href={service.link} target="_blank" rel="noopener noreferrer">
+                                        Go to Service
+                                        <ExternalLink className="ml-2 h-4 w-4" />
+                                    </a>
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            </RtoAssistanceForm>
             <div className="mt-12 text-center p-4 border-dashed border-2 border-muted-foreground/30 rounded-lg">
                 <p className="text-sm text-muted-foreground">
-                    Please note: You are being redirected to official Government of India websites. Drivergy is not responsible for the content or services provided on external sites.
+                    Please note: Some links redirect to official Government of India websites. Drivergy is not responsible for the content or services provided on external sites.
                 </p>
             </div>
         </div>

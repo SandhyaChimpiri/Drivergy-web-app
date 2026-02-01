@@ -21,6 +21,7 @@ export const LessonRequestStatusOptions = ['Pending', 'Active', 'Completed'] as 
 export const PayoutStatusOptions = ['Pending', 'Paid', 'Withdraw to UPI'] as const;
 export const RescheduleRequestStatusOptions = ['Pending', 'Approved', 'Rejected'] as const;
 export const SkillStatusOptions = ['Not Started', 'Needs Practice', 'Proficient'] as const;
+export const RtoServiceTypeOptions = ['New License', 'Renew License'] as const;
 
 export const IndianStates = ["Uttar Pradesh"] as const;
 
@@ -251,6 +252,34 @@ export const FeedbackFormSchema = z.object({
   comment: z.string().min(10, "Comment must be at least 10 characters.").max(500, "Comment is too long."),
 });
 export type FeedbackFormValues = z.infer<typeof FeedbackFormSchema>;
+
+export const RtoAssistanceFormSchema = z.object({
+    fullName: z.string().min(1, 'Full name is required.'),
+    serviceType: z.enum(RtoServiceTypeOptions, { required_error: "Please select a service type."}),
+    fathersName: z.string().optional(),
+    address: z.string().optional(),
+    aadharNumber: z.string().optional(),
+    passportPhoto: z.any().optional(),
+    signaturePhoto: z.any().optional(),
+    oldDlNumber: z.string().optional(),
+    aadharFile: z.any().optional(),
+    oldDlFile: z.any().optional(),
+  }).superRefine((data, ctx) => {
+      if (data.serviceType === 'New License') {
+          if (!data.fathersName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Father's name is required.", path: ['fathersName'] });
+          if (!data.address) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Address is required.', path: ['address'] });
+          if (!data.aadharNumber) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Aadhaar number is required.', path: ['aadharNumber'] });
+          if (!(data.passportPhoto instanceof File)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Passport photo is required.', path: ['passportPhoto'] });
+          if (!(data.signaturePhoto instanceof File)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Signature photo is required.', path: ['signaturePhoto'] });
+      }
+      if (data.serviceType === 'Renew License') {
+          if (!data.oldDlNumber) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Old DL number is required.', path: ['oldDlNumber'] });
+          if (!(data.aadharFile instanceof File)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Aadhaar file is required.', path: ['aadharFile'] });
+          if (!(data.oldDlFile instanceof File)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Old DL file is required.', path: ['oldDlFile'] });
+      }
+  });
+export type RtoAssistanceFormValues = z.infer<typeof RtoAssistanceFormSchema>;
+
 
 // AI Flow Schemas & Types
 export const DrivingAnalysisInputSchema = z.object({

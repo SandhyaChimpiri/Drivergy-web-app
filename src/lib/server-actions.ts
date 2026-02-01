@@ -2,7 +2,7 @@
 'use server';
 
 import { z } from 'zod';
-import { RegistrationFormSchema, FullCustomerDetailsSchema, UserProfileUpdateSchema, ChangePasswordSchema, CourseModuleSchema, QuizQuestionSchema, VisualContentSchema, FaqSchema, BlogPostFormValues, BlogPostSchema, TrainerRegistrationFormSchema, CustomerRegistrationFormSchema, SkillSchema } from '@/types';
+import { RegistrationFormSchema, FullCustomerDetailsSchema, UserProfileUpdateSchema, ChangePasswordSchema, CourseModuleSchema, QuizQuestionSchema, VisualContentSchema, FaqSchema, BlogPostFormValues, BlogPostSchema, TrainerRegistrationFormSchema, CustomerRegistrationFormSchema, SkillSchema, RtoAssistanceFormSchema } from '@/types';
 import type { UserProfile, ApprovalStatusType, PayoutStatusType, RescheduleRequestStatusType, UserProfileUpdateValues, RescheduleRequest, ChangePasswordValues, FullCustomerDetailsValues, CourseModuleFormValues, QuizQuestionFormValues, VisualContentFormValues, FaqFormValues, RegistrationFormValues, Notification, Skill, SkillStatus } from '@/types';
 import { format, parse, parseISO, addDays } from 'date-fns';
 import { adminAuth, adminDb, adminStorage } from './firebase/admin';
@@ -1047,7 +1047,62 @@ export async function unassignTrainerFromCustomer(customerId: string, trainerId:
     return true;
 }
 
+export async function submitRtoAssistanceAction(prevState: any, formData: FormData): Promise<{ success: boolean; error?: string; }> {
+    if (!adminDb) {
+        return { success: false, error: "Server not configured." };
+    }
 
+    const data = Object.fromEntries(formData.entries());
+    const fileFields = ['passportPhoto', 'signaturePhoto', 'aadharFile', 'oldDlFile'];
+    
+    const validationData = { ...data };
+    fileFields.forEach(field => {
+        const file = data[field] as File;
+        if (file && file.size > 0) {
+            validationData[field] = file;
+        } else {
+            delete validationData[field];
+        }
+    });
+
+    const validationResult = RtoAssistanceFormSchema.safeParse(validationData);
+
+    if (!validationResult.success) {
+        console.error("RTO Assistance validation failed:", validationResult.error.format());
+        const firstError = validationResult.error.errors[0]?.message || 'Invalid form data. Please check all fields.';
+        return { success: false, error: firstError };
+    }
+    
+    const { passportPhoto, signaturePhoto, aadharFile, oldDlFile, ...rtoData } = validationResult.data;
+
+    try {
+        const uploadPromises = [];
+        const fileUrls: Record<string, string> = {};
+
+        if (passportPhoto) uploadPromises.push(uploadFileToCloudinary(await fileToBuffer(passportPhoto), 'rto_assistance').then(url => fileUrls.passportPhotoUrl = url));
+        if (signaturePhoto) uploadPromises.push(uploadFileToCloudinary(await fileToBuffer(signaturePhoto), 'rto_assistance').then(url => fileUrls.signaturePhotoUrl = url));
+        if (aadharFile) uploadPromises.push(uploadFileToCloudinary(await fileToBuffer(aadharFile), 'rto_assistance').then(url => fileUrls.aadharFileUrl = url));
+        if (oldDlFile) uploadPromises.push(uploadFileToCloudinary(await fileToBuffer(oldDlFile), 'rto_assistance').then(url => fileUrls.oldDlFileUrl = url));
+
+        await Promise.all(uploadPromises);
+
+        await adminDb.collection('rtoAssistanceRequests').add({
+            ...rtoData,
+            ...fileUrls,
+            status: 'Pending',
+            createdAt: new Date(),
+        });
+        
+        // Here you would redirect to a payment page for the 299 fee.
+        // For now, we will just return success.
+        
+        return { success: true };
+    } catch(error: any) {
+        console.error("Error submitting RTO assistance request:", error);
+        return { success: false, error: "An unexpected error occurred while saving your application." };
+    }
+}
     
 
     
+
