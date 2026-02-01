@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -108,7 +109,7 @@ const coursesData = [
 const testimonialsData = [
     {
       name: "Priya Sharma",
-      role: "Customer, Bangalore",
+      role: "Customer, Prayagraj",
       avatar: "https://placehold.co/100x100/f472b6/ffffff.png",
       avatarHint: "happy female driver",
       testimonial: "Drivergy made learning to drive so easy! My instructor was patient and professional. The scheduling system is fantastic. I passed my test on the first try. Highly recommended!",
